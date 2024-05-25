@@ -1,0 +1,71 @@
+##############################################
+# Syntax Coloring Map For Blink-Marine Keypads
+##############################################
+# Classes -KEYWORD1-
+##############################################
+
+PkpKeypad	                  KEYWORD1
+
+##############################################
+# Methods and Functions -KEYWORD2-
+##############################################
+
+applyDefaultKeyStates         KEYWORD2
+begin                         KEYWORD2
+getRelativeEncoderTicks       KEYWORD2
+getStatus                     KEYWORD2
+initializeEncoder             KEYWORD2
+presetDefaultKeyStates        KEYWORD2
+process                       KEYWORD2
+setBacklight                  KEYWORD2
+setEncoderLeds                KEYWORD2
+setKeyBrightness              KEYWORD2
+setKeyColor                   KEYWORD2
+setKeyMode                    KEYWORD2
+setKeyStateOverride           KEYWORD2
+update                        KEYWORD2
+
+##############################################
+# Constants -LITERAL1-
+##############################################
+
+BACKLIGHT_AMBER               LITERAL1
+BACKLIGHT_BLUE                LITERAL1
+BACKLIGHT_CYAN                LITERAL1
+BACKLIGHT_DEFAULT             LITERAL1
+BACKLIGHT_GREEN               LITERAL1
+BACKLIGHT_RED                 LITERAL1
+BACKLIGHT_VIOLET              LITERAL1
+BACKLIGHT_WHITE               LITERAL1
+BACKLIGHT_YELLOW              LITERAL1
+BACKLIGHT_YELLOWGREEN         LITERAL1
+KEY_MODE_CYCLE3               LITERAL1
+KEY_MODE_CYCLE4               LITERAL1
+KEY_MODE_MOMENTARY            LITERAL1
+KEY_MODE_TOGGLE               LITERAL1
+PKP_COLOR_AMBER               LITERAL1
+PKP_COLOR_BLANK               LITERAL1
+PKP_COLOR_BLUE                LITERAL1
+PKP_COLOR_CYAN                LITERAL1
+PKP_COLOR_GREEN               LITERAL1
+PKP_COLOR_RED                 LITERAL1
+PKP_COLOR_VIOLET              LITERAL1
+PKP_COLOR_WHITE               LITERAL1
+PKP_ENCODER_1                 LITERAL1
+PKP_ENCODER_2                 LITERAL1
+PKP_KEY_1                     LITERAL1
+PKP_KEY_10                    LITERAL1
+PKP_KEY_11                    LITERAL1
+PKP_KEY_12                    LITERAL1
+PKP_KEY_13                    LITERAL1
+PKP_KEY_14                    LITERAL1
+PKP_KEY_15                    LITERAL1
+PKP_KEY_16                    LITERAL1
+PKP_KEY_2                     LITERAL1
+PKP_KEY_3                     LITERAL1
+PKP_KEY_4                     LITERAL1
+PKP_KEY_5                     LITERAL1
+PKP_KEY_6                     LITERAL1
+PKP_KEY_7                     LITERAL1
+PKP_KEY_8                     LITERAL1
+PKP_KEY_9                     LITERAL1

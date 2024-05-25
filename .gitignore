@@ -1,0 +1,53 @@
+# Compiled object files, libraries, and executables
+*.o
+*.a
+*.so
+*.elf
+*.bin
+*.hex
+*.eep
+*.map
+*.srec
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Arduino IDE files
+*.ino~
+*.pde~
+
+# Editor backup files
+*~
+*.bak
+*.BAK
+*.tmp
+*.TMP
+
+# Sublime Text files
+*.sublime-workspace
+*.sublime-project
+
+# VS Code files
+.vscode/
+
+# Project folders
+build/
+output/
+
+# Miscellaneous
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.lock
+
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
