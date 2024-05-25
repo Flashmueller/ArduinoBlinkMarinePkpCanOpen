@@ -2,8 +2,11 @@
 # Arduino library for interfacing Blink Marine PKP-3500-SI-MT via CANopen
 <p align="center"><img src="docs/readmeHeaderImage.png" alt="PKPMCPDuino" width="400"/>
 </p>
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Lint source code](https://github.com/Flashmueller/PKP2600SI-Arduino-CAN-Controller/actions/workflows/lintSourceCode.yml/badge.svg)](https://github.com/Flashmueller/PKP2600SI-Arduino-CAN-Controller/actions/workflows/lintSourceCode.yml)
-[![Build Arduino examples](https://github.com/Flashmueller/PKP2600SI-Arduino-CAN-Controller/actions/workflows/buildExamples.yml/badge.svg)](https://github.com/Flashmueller/PKP2600SI-Arduino-CAN-Controller/actions/workflows/buildExamples.yml)</br></br>
+[![Build Arduino examples](https://github.com/Flashmueller/PKP2600SI-Arduino-CAN-Controller/actions/workflows/buildExamples.yml/badge.svg)](https://github.com/Flashmueller/PKP2600SI-Arduino-CAN-Controller/actions/workflows/buildExamples.yml)
+</br>
 This library enables control of a PKP-3500-SI-MT CAN Keypad using any CAN bus interface with an Arduino-compatible microcontroller. This project is a fork of [PKP2600SI-Arduino-CAN-Controller](https://github.com/Mbmatthews/PKP2600SI-Arduino-CAN-Controller), created to extend support to the PKP-3500-SI-MT model. Due to inconsistencies in the interface and varying hardware requirements, the library has been rewritten to be hardware-independent with minimal dependencies.
 
 ## Features

@@ -36,10 +36,10 @@ typedef uint8_t (*CanMsgTxCallback)(const struct can_frame& txMsg);
 class Pkp {
   public:
     // ------ Public Type Definitions ------
-    enum keypadCanStatus_e : uint8_t {
-        KPS_FRESH                    = 0,
-        KPS_RX_WITHIN_LAST_SECOND    = 1,
-        KPS_NO_RX_WITHIN_LAST_SECOND = 3
+    enum keypadCanStatus_e : int8_t {
+        KPS_FRESH                    = -1,
+        KPS_RX_WITHIN_LAST_SECOND    = 0,
+        KPS_NO_RX_WITHIN_LAST_SECOND = 1
     };
 
     enum keyMode_e : uint8_t {

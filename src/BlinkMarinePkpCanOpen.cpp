@@ -110,7 +110,7 @@ uint8_t Pkp::getKeyState(uint8_t keyIndex) {
  * @param inputIndex The index of the wired input (0 to PKP_MAX_WIRED_IN_AMOUNT - 1).
  * @return The state of the specified wired input, or 0 if the index is out of range.
  */
-uint8_t Pkp::getWiredInput(uint8_t inputIndex, bool analog) {
+uint8_t Pkp::getWiredInput(uint8_t inputIndex) {
     if (inputIndex > PKP_MAX_WIRED_IN_AMOUNT - 1) {
         return 0;
     }
