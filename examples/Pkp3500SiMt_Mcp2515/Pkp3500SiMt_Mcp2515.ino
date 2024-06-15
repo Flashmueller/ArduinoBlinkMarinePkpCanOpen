@@ -1,122 +1,159 @@
-/*  Brandon Matthews
- *  Developed for Arduino UNO and MCP2515
- *  Modified for PKP-3500-SI-MT
+/**
+ * @brief   Example for PKP-3500-SI-MT on Arduino with MCP2515
+ * @author  Brandon Matthews, Stefan Hirschenberger
  */
 
-// This library depends on and requires TimerOne library, SPI library, and autowp mcp2515 library v1.03
+#include <Adafruit_MCP2515.h>
 #include <BlinkMarinePkpCanOpen.h>
-#include <mcp2515.h>
 
-#define CS_PIN          10
-#define INTERRUPT_PIN   3
-#define KEYPAD_BASE_ID  0x15
-#define ENABLE_PASSCODE false
+//Prototype for hardware specific callback function
+uint8_t transmittMessageCallBack(const struct can_frame& txMsg);
 
-MCP2515   mcp2515(CS_PIN);
-PkpKeypad keypad(mcp2515, INTERRUPT_PIN, KEYPAD_BASE_ID, ENABLE_PASSCODE);
+#define KEYPAD_BASE_ID   0x15
+#define CAN_BUS_BAUDRATE 125000
+#define MCP_CS_PIN       10
+#define MCP_INT_PIN      3
+#define MCP_CLOCK_SPEED  8e6 //16e6 for 16MHz
 
-unsigned long currentMillis;
-unsigned long key9OnTime = 0;
-bool          lastKey9State;
+Adafruit_MCP2515 can(MCP_CS_PIN);
+Pkp              keypad(KEYPAD_BASE_ID, transmittMessageCallBack);
 
 void setup() {
-    Serial.begin(115200);
-    keypad.setSerial(&Serial); // Required for the keypad library to print things out to serial
 
-    uint8_t keypadPasscode[4] = {1, 2, 3, 4};
-    keypad.setKeypadPassword(keypadPasscode);
-    keypad.setKeyBrightness(70);
-    keypad.setBacklight(BACKLIGHT_AMBER, 10);
+    pinMode(LED_BUILTIN, OUTPUT);
+    Serial.begin(115200);
+    while (!Serial) {
+        digitalWrite(LED_BUILTIN, (millis() % 500 > 250));
+        delay(10);
+        if (millis() > 5000) {
+            break;
+        }
+    }
+    digitalWrite(LED_BUILTIN, LOW);
+    Serial.println(F("PKP-3500-SI-MT Example Sketch started."));
+
+    // start the CAN bus at 250 kbps
+    if (!can.begin(CAN_BUS_BAUDRATE)) {
+        Serial.println("Starting CAN failed!");
+        while (1) {
+            delay(10);
+        }
+    }
+    Serial.println("Starting CAN!");
+
+    // register the receive callback
+    can.onReceive(MCP_INT_PIN, onReceive);
 
     // Set Key color and blink states
-    uint8_t colors1[4] = {PKP_COLOR_BLANK, PKP_COLOR_YELLOW, PKP_COLOR_BLANK,
-                          PKP_COLOR_YELLOW}; // array for the 4 possible key states' respective colors
-    uint8_t blinks1[4] = {PKP_COLOR_BLANK, PKP_COLOR_BLANK, PKP_COLOR_CYAN, PKP_COLOR_BLANK};
+    uint8_t colors1[4] = {Pkp::KEY_COLOR_BLANK, Pkp::KEY_COLOR_GREEN, Pkp::KEY_COLOR_BLANK, Pkp::KEY_COLOR_RED};
+    uint8_t blinks1[4] = {Pkp::KEY_COLOR_BLANK, Pkp::KEY_COLOR_BLANK, Pkp::KEY_COLOR_GREEN, Pkp::KEY_COLOR_BLANK};
 
-    keypad.setKeyColor(PKP_KEY_2, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_3, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_4, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_5, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_6, colors1, blinks1);
-    colors1[1] = PKP_COLOR_GREEN;
-    keypad.setKeyColor(PKP_KEY_7, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_8, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_9, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_10, colors1, blinks1);
-    colors1[1] = PKP_COLOR_RED;
-    colors1[2] = PKP_COLOR_GREEN;
-    colors1[3] = PKP_COLOR_BLUE;
-    keypad.setKeyColor(PKP_KEY_12, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_13, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_14, colors1, blinks1);
-    keypad.setKeyColor(PKP_KEY_15, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_2, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_3, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_4, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_5, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_6, colors1, blinks1);
+    colors1[1] = Pkp::KEY_COLOR_GREEN;
+    keypad.setKeyColor(Pkp::KEY_7, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_8, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_9, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_10, colors1, blinks1);
+    colors1[1] = Pkp::KEY_COLOR_RED;
+    colors1[2] = Pkp::KEY_COLOR_GREEN;
+    colors1[3] = Pkp::KEY_COLOR_BLUE;
+    keypad.setKeyColor(Pkp::KEY_12, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_13, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_14, colors1, blinks1);
+    keypad.setKeyColor(Pkp::KEY_15, colors1, blinks1);
 
-    keypad.setKeyMode(PKP_KEY_1, PkpKeypad::KEY_MODE_MOMENTARY);
-    keypad.setKeyMode(PKP_KEY_2, PkpKeypad::KEY_MODE_MOMENTARY);
-    keypad.setKeyMode(PKP_KEY_3, PkpKeypad::KEY_MODE_MOMENTARY);
-    keypad.setKeyMode(PKP_KEY_4, PkpKeypad::KEY_MODE_MOMENTARY);
-    keypad.setKeyMode(PKP_KEY_5, PkpKeypad::KEY_MODE_MOMENTARY);
-    keypad.setKeyMode(PKP_KEY_6, PkpKeypad::KEY_MODE_MOMENTARY);
-    keypad.setKeyMode(PKP_KEY_7, PkpKeypad::KEY_MODE_TOGGLE);
-    keypad.setKeyMode(PKP_KEY_8, PkpKeypad::KEY_MODE_TOGGLE);
-    keypad.setKeyMode(PKP_KEY_9, PkpKeypad::KEY_MODE_TOGGLE);
-    keypad.setKeyMode(PKP_KEY_10, PkpKeypad::KEY_MODE_TOGGLE);
-    keypad.setKeyMode(PKP_KEY_11, PkpKeypad::KEY_MODE_MOMENTARY);
-    keypad.setKeyMode(PKP_KEY_12, PkpKeypad::KEY_MODE_CYCLE4);
-    keypad.setKeyMode(PKP_KEY_13, PkpKeypad::KEY_MODE_TOGGLE);
-    keypad.setKeyMode(PKP_KEY_14, PkpKeypad::KEY_MODE_TOGGLE);
-    keypad.setKeyMode(PKP_KEY_15, PkpKeypad::KEY_MODE_CYCLE4);
+    keypad.setKeyMode(Pkp::KEY_1, Pkp::KEY_MODE_TOGGLE);
+    keypad.setKeyMode(Pkp::KEY_2, Pkp::KEY_MODE_MOMENTARY);
+    keypad.setKeyMode(Pkp::KEY_3, Pkp::KEY_MODE_MOMENTARY);
+    keypad.setKeyMode(Pkp::KEY_4, Pkp::KEY_MODE_MOMENTARY);
+    keypad.setKeyMode(Pkp::KEY_5, Pkp::KEY_MODE_MOMENTARY);
+    keypad.setKeyMode(Pkp::KEY_6, Pkp::KEY_MODE_MOMENTARY);
+    keypad.setKeyMode(Pkp::KEY_7, Pkp::KEY_MODE_TOGGLE);
+    keypad.setKeyMode(Pkp::KEY_8, Pkp::KEY_MODE_TOGGLE);
+    keypad.setKeyMode(Pkp::KEY_9, Pkp::KEY_MODE_TOGGLE);
+    keypad.setKeyMode(Pkp::KEY_10, Pkp::KEY_MODE_TOGGLE);
+    keypad.setKeyMode(Pkp::KEY_11, Pkp::KEY_MODE_MOMENTARY);
+    keypad.setKeyMode(Pkp::KEY_12, Pkp::KEY_MODE_CYCLE4);
+    keypad.setKeyMode(Pkp::KEY_13, Pkp::KEY_MODE_TOGGLE);
+    keypad.setKeyMode(Pkp::KEY_14, Pkp::KEY_MODE_TOGGLE);
+    keypad.setKeyMode(Pkp::KEY_15, Pkp::KEY_MODE_CYCLE4);
 
 
-    uint8_t defaultStates[PKP_MAX_KEY_AMOUNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int8_t defaultStates[PKP_MAX_KEY_AMOUNT] = {0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0};
     keypad.presetDefaultKeyStates(defaultStates);
-
+    keypad.applyDefaultKeyStates();
+    keypad.setKeyBrightness(70);
+    keypad.setBacklight(Pkp::BACKLIGHT_BLUE, 50);
     keypad.initializeEncoder(0, 16, 5);
     keypad.initializeEncoder(1, 16, 10);
 
-    keypad.begin(CAN_1000KBPS, MCP_8MHZ); // These are MCP settings to be passed
+    keypad.begin();
 }
 
-//----------------------------------------------------------------------------
-
-uint8_t  brightness    = 0;
-uint32_t lastIncrement = 0;
-int16_t  encoder       = 0;
-
 void loop() {
-    currentMillis = millis();
 
-    keypad.process(); // must have this in main loop.
+    static uint32_t key9OnTime    = 0;
+    static bool     lastKey9State = 0;
+    static uint32_t lastIncrement = 0;
+    uint32_t        currentMillis = millis();
 
-    if (keypad._keyState[PKP_KEY_1] == 1) {
+    if (keypad.getKeyState(Pkp::KEY_1) == 1) {
         // do stuff
     }
 
-    // if key 9 is pressed, turn off after 2 seconds
-    if (keypad._keyState[PKP_KEY_9] == 1 && lastKey9State == 0) {
+    // if key 9 is release, blink for two seconds and turn off afterwards
+    uint8_t key9State = keypad.getKeyState(Pkp::KEY_9);
+    if (key9State == 0 && lastKey9State == 1) {
         key9OnTime = currentMillis;
+        keypad.setKeyStateOverride(Pkp::KEY_9, 2);
     }
-    lastKey9State = keypad._keyState[PKP_KEY_9];
-    if (lastKey9State == 1 && (currentMillis - key9OnTime) > 2000) {
-        keypad._keyState[PKP_KEY_9] = 0;
-        keypad.update();
+    if (key9OnTime + 2000 < currentMillis) {
+        keypad.setKeyStateOverride(Pkp::KEY_9, -1);
     }
+    lastKey9State = key9State;
 
-    int      encoderOld = encoder;
-    bool     newData    = false;
-    uint16_t leds       = 0;
-    encoder             += keypad.getRelativeEncoderTicks(0);
-    encoder             = constrain(encoder, 0, 16);
 
-    if (encoder != encoderOld) {
-        for (int i = 0; i < encoder; i++) {
-            leds |= 1 << i;
+    bool    newData = false;
+    int32_t leds[2] = {-1, -1};
+    for (int i = 0; i < 2; i++) {
+        int16_t encoder = keypad.getEncoderPosition(i);
+        for (int j = 0; j < encoder; j++) {
+            leds[i] |= 1 << j;
         }
-        newData = 1;
     }
+    keypad.setEncoderLeds(leds);
 
-    if (newData && lastIncrement + 50 < currentMillis) {
-        keypad.setEncoderLed(0, leds);
-        lastIncrement = currentMillis;
+    if (keypad.getStatus() != Pkp::KPS_RX_WITHIN_LAST_SECOND) {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(100);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(500);
     }
+}
+
+uint8_t transmittMessageCallBack(const struct can_frame& txMsg) {
+    can.beginPacket(txMsg.can_id, txMsg.can_dlc);
+    for (int i = 0; i < txMsg.can_dlc; i++) {
+        can.write(txMsg.data[i]);
+    }
+    can.endPacket();
+    return 0;
+}
+
+void onReceive(int packetSize) {
+    struct can_frame rxMsg;
+    rxMsg.can_id  = can.packetId();
+    rxMsg.can_dlc = can.packetDlc();
+    packetSize    = min(packetSize, sizeof(rxMsg.data) / sizeof(rxMsg.data[0]));
+    for (int i = 0; i < packetSize; i++) {
+        if (can.peek() == -1) {
+            break;
+        }
+        rxMsg.data[i] = (char)can.read();
+    }
+    keypad.process(rxMsg);
 }

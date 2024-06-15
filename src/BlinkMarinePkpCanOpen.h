@@ -14,7 +14,6 @@
 #define BLINK_MARINE_CAN_OPEN_KEYPAD
 
 #include <Arduino.h>
-#include <can.h>
 
 //Inline functions as alternative to pre-processor macros
 inline bool inLimits(int32_t value, int32_t low, int32_t high) {
@@ -29,8 +28,18 @@ constexpr size_t PKP_MAX_KEY_AMOUNT            = 15;
 constexpr size_t PKP_MAX_WIRED_IN_AMOUNT       = 4;
 constexpr size_t PKP_MAX_ROTARY_ENCODER_AMOUNT = 2;
 
+struct can_frame {
+    uint32_t can_id;                              // Identifier for CAN frame
+    uint8_t  can_dlc;                             // Data length code
+    uint8_t  data[8] __attribute__((aligned(8))); // Data, aligned to 8 bytes
+
+    // Optional: Default constructor initializing members
+    can_frame() : can_id(0), can_dlc(0), data{0} {
+    }
+};
+
 //Definition for message transmitting callback function(pointer)
-typedef uint8_t (*CanMsgTxCallback)(const struct can_frame& txMsg);
+typedef uint8_t (*CanMsgTxCallback)(const can_frame& txMsg);
 
 //Class definitions
 class Pkp {

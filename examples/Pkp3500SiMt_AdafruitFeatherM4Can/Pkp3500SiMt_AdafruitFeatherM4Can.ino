@@ -1,9 +1,10 @@
-/*  Brandon Matthews
- *  Stefan Hirschenberger
- *  Example for PKP-3500-SI-MT on Adafruit Feather M4 Can
+/**
+ * @brief   Example for PKP-3500-SI-MT on Adafruit Feather M4 Can
+ * @author  Brandon Matthews, Stefan Hirschenberger
  */
 
-#define KEYPAD_BASE_ID 0x15
+#define KEYPAD_BASE_ID   0x15
+#define CAN_BUS_BAUDRATE 125000
 
 #include <Adafruit_NeoPixel.h>
 #include <BlinkMarinePkpCanOpen.h>
@@ -12,14 +13,13 @@
 //Prototype for hardware specific callback function
 uint8_t transmittMessageCallBack(const struct can_frame& txMsg);
 
-CANSAME5x         CAN;
+CANSAME5x         can;
 Pkp               keypad(KEYPAD_BASE_ID, transmittMessageCallBack);
 Adafruit_NeoPixel pixel(1, 8, NEO_GRB + NEO_KHZ800);
 
 void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
-
     Serial.begin(115200);
     while (!Serial) {
         digitalWrite(LED_BUILTIN, (millis() % 500 > 250));
@@ -32,7 +32,7 @@ void setup() {
     Serial.println(F("PKP-3500-SI-MT Example Sketch started."));
 
     // start the CAN bus at 250 kbps
-    if (!CAN.begin(250000)) {
+    if (!can.begin(CAN_BUS_BAUDRATE)) {
         Serial.println("Starting CAN failed!");
         while (1) {
             delay(10);
@@ -41,7 +41,7 @@ void setup() {
     Serial.println("Starting CAN!");
 
     // register the receive callback
-    CAN.onReceive(onReceive);
+    can.onReceive(onReceive);
 
     // Set Key color and blink states
     uint8_t colors1[4] = {Pkp::KEY_COLOR_BLANK, Pkp::KEY_COLOR_GREEN, Pkp::KEY_COLOR_BLANK, Pkp::KEY_COLOR_RED};
@@ -138,24 +138,24 @@ void loop() {
 }
 
 uint8_t transmittMessageCallBack(const struct can_frame& txMsg) {
-    CAN.beginPacket(txMsg.can_id, txMsg.can_dlc);
+    can.beginPacket(txMsg.can_id, txMsg.can_dlc);
     for (int i = 0; i < txMsg.can_dlc; i++) {
-        CAN.write(txMsg.data[i]);
+        can.write(txMsg.data[i]);
     }
-    CAN.endPacket();
+    can.endPacket();
     return 0;
 }
 
 void onReceive(int packetSize) {
     struct can_frame rxMsg;
-    rxMsg.can_id  = CAN.packetId();
-    rxMsg.can_dlc = CAN.packetDlc();
+    rxMsg.can_id  = can.packetId();
+    rxMsg.can_dlc = can.packetDlc();
     packetSize    = min(packetSize, sizeof(rxMsg.data) / sizeof(rxMsg.data[0]));
     for (int i = 0; i < packetSize; i++) {
-        if (CAN.peek() == -1) {
+        if (can.peek() == -1) {
             break;
         }
-        rxMsg.data[i] = (char)CAN.read();
+        rxMsg.data[i] = (char)can.read();
     }
     keypad.process(rxMsg);
 }

@@ -9,6 +9,9 @@
 </br>
 This library enables control of a PKP-3500-SI-MT CAN Keypad using any CAN bus interface with an Arduino-compatible microcontroller. This project is a fork of [PKP2600SI-Arduino-CAN-Controller](https://github.com/Mbmatthews/PKP2600SI-Arduino-CAN-Controller), created to extend support to the PKP-3500-SI-MT model. Due to inconsistencies in the interface and varying hardware requirements, the library has been rewritten to be hardware-independent with minimal dependencies.
 
+## Caution
+This library is still under development - The arduino example sketches have not been thoroughly tested. Use at your own risk.
+
 ## Features
 - Hardware Independence: Works with any CAN hardware interface compatible with Arduino.
 - Message Processing: Processes messages from the PKP-3500-SI-MT and notifies if a message is not consumed.

@@ -171,14 +171,14 @@ Pkp::returnState_e Pkp::initializeEncoder(uint8_t index, uint8_t topValue, uint1
     }
 
     // Initialize can frame for encoder top level (0 equals to 0xFFFF)
-    struct can_frame txMsg = {0};
-    txMsg.can_id           = CAN_TX_BASE_ID_SDO + _canId;
-    txMsg.can_dlc          = 5;
-    txMsg.data[0]          = 0x2F;
-    txMsg.data[1]          = 0x00;
-    txMsg.data[2]          = 0x20;
-    txMsg.data[3]          = 0x06 + index;
-    txMsg.data[4]          = _encoderTopValue[index];
+    struct can_frame txMsg;
+    txMsg.can_id  = CAN_TX_BASE_ID_SDO + _canId;
+    txMsg.can_dlc = 5;
+    txMsg.data[0] = 0x2F;
+    txMsg.data[1] = 0x00;
+    txMsg.data[2] = 0x20;
+    txMsg.data[3] = 0x06 + index;
+    txMsg.data[4] = _encoderTopValue[index];
 
     returnState_e returnValue = _transmit(txMsg);
     if (returnValue != RS_SUCCESS) {
@@ -284,7 +284,7 @@ Pkp::returnState_e Pkp::setBacklight(int8_t color, int8_t brightness) {
     _backlightColor      = color;
 
     // Initialize can frame
-    struct can_frame txMsg = {0};
+    struct can_frame txMsg;
 
     txMsg.can_id  = CAN_TX_BASE_ID_KEY_BACKLIGHT + _canId;
     txMsg.can_dlc = 2;
@@ -328,14 +328,14 @@ Pkp::returnState_e Pkp::setKeyBrightness(uint8_t brightness) {
     _keyBrightness = constrain(brightness, 0, 100);
 
     // Initialize can frame
-    struct can_frame txMsg = {0};
-    txMsg.can_id           = CAN_TX_BASE_ID_SDO + _canId;
-    txMsg.can_dlc          = 5;
-    txMsg.data[0]          = 0x2F;
-    txMsg.data[1]          = 0x03;
-    txMsg.data[2]          = 0x20;
-    txMsg.data[3]          = 0x01;
-    txMsg.data[4]          = 0x3F * _keyBrightness / 100;
+    struct can_frame txMsg;
+    txMsg.can_id  = CAN_TX_BASE_ID_SDO + _canId;
+    txMsg.can_dlc = 5;
+    txMsg.data[0] = 0x2F;
+    txMsg.data[1] = 0x03;
+    txMsg.data[2] = 0x20;
+    txMsg.data[3] = 0x01;
+    txMsg.data[4] = 0x3F * _keyBrightness / 100;
 
     return _transmit(txMsg);
 }
@@ -488,11 +488,11 @@ Pkp::returnState_e Pkp::_decodeWiredInputs(const uint8_t data[8]) {
 Pkp::returnState_e Pkp::_initializeKeypad() {
 
     // Send startup message to keypad
-    struct can_frame txMsg = {0};
-    txMsg.can_id           = 0x00;
-    txMsg.can_dlc          = 2;
-    txMsg.data[0]          = 0x01;
-    txMsg.data[1]          = _canId;
+    struct can_frame txMsg;
+    txMsg.can_id  = 0x00;
+    txMsg.can_dlc = 2;
+    txMsg.data[0] = 0x01;
+    txMsg.data[1] = _canId;
 
     returnState_e returnValue = _transmit(txMsg, true);
     if (returnValue != RS_SUCCESS) {
@@ -590,7 +590,7 @@ Pkp::returnState_e Pkp::_writeEncoderLeds() {
         }
     }
 
-    struct can_frame txMsg = {0};
+    struct can_frame txMsg;
 
     if (writeBlinking) {
         txMsg.can_id  = CAN_TX_BASE_ID_SDO + _canId;
@@ -620,10 +620,10 @@ Pkp::returnState_e Pkp::_writeKeyLeds(bool mode) {
     mode = constrain(mode, CM_SOLID, CM_BLINK);
 
     // Initialize can frame
-    struct can_frame txMsg = {0};
-    txMsg.can_id           = mode ? CAN_TX_BASE_ID_KEY_BLINK : CAN_TX_BASE_ID_KEY_COLOR;
-    txMsg.can_id           += _canId;
-    txMsg.can_dlc          = 6;
+    struct can_frame txMsg;
+    txMsg.can_id  = mode ? CAN_TX_BASE_ID_KEY_BLINK : CAN_TX_BASE_ID_KEY_COLOR;
+    txMsg.can_id  += _canId;
+    txMsg.can_dlc = 6;
 
     bool pColArray[PKP_MAX_KEY_AMOUNT][3] = {0};
 

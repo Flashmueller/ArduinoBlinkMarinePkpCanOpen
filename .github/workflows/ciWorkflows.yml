@@ -38,6 +38,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Prepare library directory
+        run: |
+          mkdir -p src/BlinkMarinePkpCanOpen
+          mv src/BlinkMarinePkpCanOpen.h src/BlinkMarinePkpCanOpen/
+          mv src/BlinkMarinePkpCanOpen.cpp src/BlinkMarinePkpCanOpen/
+
       - name: Install Arduino CLI
         run: |
           curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
@@ -56,9 +62,9 @@ jobs:
 
       - name: Install Arduino Libraries
         run: |
-          arduino-cli lib install "autowp-mcp2515"
+          arduino-cli lib install "Adafruit MCP2515"
           arduino-cli lib install "Adafruit CAN"
-          # Add more libraries as needed
+          arduino-cli lib install "Adafruit NeoPixel"
 
       - name: Compile Keypad configuration example
         run: arduino-cli compile --fqbn arduino:avr:uno examples/PkpInitialConfiguration/PkpInitialConfiguration.ino
